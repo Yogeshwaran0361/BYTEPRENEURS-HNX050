@@ -155,7 +155,7 @@ export const CaretakerShell: React.FC = () => {
         </aside>
 
         {/* Main Content Area */}
-        <main id="caretaker-main-content" className="flex-1 min-w-0 pb-24 lg:pb-8">
+        <main id="caretaker-main-content" className="flex-1 min-w-0 pb-32 lg:pb-8">
           <Outlet />
         </main>
       </div>

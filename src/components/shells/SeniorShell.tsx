@@ -203,7 +203,7 @@ export const SeniorShell: React.FC = () => {
         </aside>
 
         {/* Main Content Area */}
-        <main id="senior-main-content" className="flex-1 min-w-0">
+        <main id="senior-main-content" className="flex-1 min-w-0 pb-32 md:pb-8">
           <Outlet />
         </main>
       </div>

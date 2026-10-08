@@ -140,7 +140,7 @@ export const CaregiverShell: React.FC = () => {
         </aside>
 
         {/* Main Content Area */}
-        <main id="caregiver-main-content" className="flex-1 min-w-0 pb-24 lg:pb-8">
+        <main id="caregiver-main-content" className="flex-1 min-w-0 pb-32 lg:pb-8">
           <Outlet />
         </main>
       </div>

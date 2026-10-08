@@ -40,7 +40,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     return (
       <div
         ref={dropdownRef}
-        className="fixed bottom-6 right-6 z-50 select-none print:hidden"
+        className="fixed floating-lang-pill right-4 lg:right-6 z-40 select-none print:hidden"
       >
         <button
           type="button"
