@@ -208,10 +208,10 @@ export const SeniorShell: React.FC = () => {
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation Bar (Large touch targets with clear text labels) */}
+      {/* Mobile Bottom Navigation Bar (Large touch targets with clear text labels & safe area inset) */}
       <nav
         aria-label="Mobile navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-nest-surface border-t-2 border-nest-border shadow-tactile-lg"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-nest-surface border-t-2 border-nest-border shadow-tactile-lg safe-bottom-nav"
       >
         <div className="grid grid-cols-4 h-20 max-w-lg mx-auto">
           {mobileNavItems.map(item => {

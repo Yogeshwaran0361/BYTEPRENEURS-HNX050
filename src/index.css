@@ -18,6 +18,11 @@
     background-color: #FAF8F5;
     color: #1C2024;
     line-height: 1.5;
+    /* Safe-area insets support for edge-to-edge Android/iOS screens */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Accessibility focus ring defaults */
@@ -41,6 +46,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+
+  /* Safe area padding helper for fixed bottom navigation bars */
+  .safe-bottom-nav {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
   }
 }
 

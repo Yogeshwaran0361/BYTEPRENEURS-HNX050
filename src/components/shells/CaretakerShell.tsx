@@ -155,10 +155,48 @@ export const CaretakerShell: React.FC = () => {
         </aside>
 
         {/* Main Content Area */}
-        <main id="caretaker-main-content" className="flex-1 min-w-0">
+        <main id="caretaker-main-content" className="flex-1 min-w-0 pb-24 lg:pb-8">
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation Bar (Caretaker Focus: 5 destinations with safe area insets) */}
+      <nav
+        aria-label="Caretaker mobile navigation"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t-2 border-olive-200/80 shadow-tactile-lg safe-bottom-nav"
+      >
+        <div className="grid grid-cols-5 h-20 max-w-lg mx-auto">
+          {caretakerNavItems.slice(0, 5).map(item => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.exact}
+                className={({ isActive }) =>
+                  `flex flex-col items-center justify-center gap-1 text-center select-none transition-colors touch-target-lg relative ${
+                    isActive
+                      ? 'text-olive-900 font-bold bg-olive-50 border-t-3 border-olive-600 -mt-[2px]'
+                      : 'text-nest-ink-muted hover:text-nest-ink'
+                  }`
+                }
+              >
+                <div className="relative">
+                  <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
+                  {item.badge && (
+                    <span className="absolute -top-1.5 -right-2 px-1.5 py-0.2 text-[10px] font-extrabold rounded-full bg-amberwarm-500 text-white leading-tight">
+                      {item.badge}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[11px] font-semibold tracking-tight leading-tight truncate max-w-[64px]">
+                  {item.label}
+                </span>
+              </NavLink>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 };
