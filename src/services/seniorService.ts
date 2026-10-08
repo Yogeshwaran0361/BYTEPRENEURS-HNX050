@@ -4,6 +4,7 @@ import { DEV_OLDER_ADULT } from './mock/devSeedData';
 import { medicationSchedulerService } from './engine/medicationSchedulerService';
 import { alertEngineService } from './engine/alertEngineService';
 import { authService } from './authService';
+import { smsService } from './smsService';
 
 export interface SeniorService {
   getProfile(adultId?: string): Promise<ServiceResponse<OlderAdult>>;
@@ -233,6 +234,17 @@ class SeniorServiceImpl implements SeniorService {
         // non-blocking
       }
     }
+
+    // Trigger one real SMS dispatch for this support request event
+    const seniorDisplayName = this.adultProfile.preferred_name || 'Senior';
+    const occKey = `support-${resolvedAdultId}-${Date.now()}:SUPPORT_REQUESTED`;
+    smsService.triggerSms({
+      olderAdultId: resolvedAdultId,
+      eventType: 'SUPPORT_REQUESTED',
+      occurrenceKey: occKey,
+      seniorName: seniorDisplayName,
+      customBody: `NESTCARE SUPPORT: ${seniorDisplayName} has requested assistance. Please check the NESTCARE caregiver portal.`,
+    }).catch(() => {});
 
     const message = medicineName
       ? `A gentle notice was sent to ${caregiverName} regarding ${medicineName}.`

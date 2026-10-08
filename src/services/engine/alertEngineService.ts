@@ -27,6 +27,7 @@ import { connectionService } from '../connectionService';
 import { medicationSchedulerService } from './medicationSchedulerService';
 import { medicineService } from '../medicineService';
 import { authService } from '../authService';
+import { smsService } from '../smsService';
 
 class AlertEngineServiceImpl {
   private alerts: Alert[] = [...DEV_ALERTS];
@@ -77,6 +78,16 @@ class AlertEngineServiceImpl {
           pending_minutes: Math.max(0, Math.floor((Date.now() - new Date(req.created_at).getTime()) / 60000)),
         };
         this.alerts.unshift(newAlert);
+
+        // Send real SMS for SUPPORT_REQUESTED
+        const seniorName = DEV_OLDER_ADULT.preferred_name || 'Senior';
+        smsService.triggerSms({
+          olderAdultId,
+          alertId: newAlert.id,
+          eventType: 'SUPPORT_REQUESTED',
+          occurrenceKey: `supp-${req.id}:SUPPORT_REQUESTED`,
+          seniorName,
+        }).catch(() => {});
       }
     }
 
@@ -127,13 +138,40 @@ class AlertEngineServiceImpl {
             created_at: ev.scheduledFor || new Date().toISOString(),
           };
           this.alerts.unshift(newAlert);
+
+          // Send real SMS for DELAYED or MISSED
+          if (alertType === 'DELAYED' || alertType === 'MISSED') {
+            const seniorName = DEV_OLDER_ADULT.preferred_name || 'Senior';
+            smsService.triggerSms({
+              olderAdultId,
+              alertId: newAlert.id,
+              eventType: alertType,
+              occurrenceKey: `${ev.id}:${alertType}`,
+              seniorName,
+              scheduledTime: ev.scheduledTime,
+            }).catch(() => {});
+          }
         } else {
           // If already existing and still OPEN, update latest pending minutes & type escalation if transitioned
           if (existing.status === 'OPEN') {
+            const previousType = existing.type;
             existing.type = alertType;
             existing.title = alertTitle;
             existing.message = alertMessage;
             existing.pending_minutes = ev.delayMinutes || existing.pending_minutes;
+
+            // If escalated from DELAYED to MISSED, trigger the one MISSED SMS
+            if (previousType === 'DELAYED' && alertType === 'MISSED') {
+              const seniorName = DEV_OLDER_ADULT.preferred_name || 'Senior';
+              smsService.triggerSms({
+                olderAdultId,
+                alertId: existing.id,
+                eventType: 'MISSED',
+                occurrenceKey: `${ev.id}:MISSED`,
+                seniorName,
+                scheduledTime: ev.scheduledTime,
+              }).catch(() => {});
+            }
           }
         }
       }
