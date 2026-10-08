@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: "Atkinson Hyperlegible", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    color: #1C2024;
+    background-color: #FAF8F5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: #FAF8F5;
+    color: #1C2024;
+    line-height: 1.5;
+  }
+
+  /* Accessibility focus ring defaults */
+  :focus-visible {
+    outline: 2.5px solid #D45D3A;
+    outline-offset: 2px;
+  }
+
+  /* Touch target utility for senior accessibility */
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .touch-target-lg {
+    min-height: 56px;
+    min-width: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Skip link for keyboard users */
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
