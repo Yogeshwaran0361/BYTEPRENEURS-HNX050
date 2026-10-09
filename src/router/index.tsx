@@ -18,6 +18,8 @@ import { SeniorRegisterPage } from '../pages/senior/SeniorRegisterPage';
 import { SeniorLoginPage } from '../pages/senior/SeniorLoginPage';
 import { CaregiverRegisterPage } from '../pages/caregiver/CaregiverRegisterPage';
 import { CaregiverLoginPage } from '../pages/caregiver/CaregiverLoginPage';
+import { ForgotPasswordPage } from '../pages/public/ForgotPasswordPage';
+import { ResetPasswordPage } from '../pages/public/ResetPasswordPage';
 
 // Senior Pages
 import { SeniorDashboardPage } from '../pages/senior/SeniorDashboardPage';
@@ -69,6 +71,10 @@ export const AppRouter: React.FC = () => {
         <Route path="/caregiver/login" element={<CaregiverLoginPage />} />
         <Route path="/caretaker/register" element={<Navigate to="/caregiver/register" replace />} />
         <Route path="/caretaker/login" element={<CaregiverLoginPage />} />
+
+        {/* Password Reset Routes */}
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Route>
 
       {/* Senior Portal Protected Routes */}

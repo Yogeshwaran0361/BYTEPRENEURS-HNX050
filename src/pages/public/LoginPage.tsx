@@ -129,14 +129,13 @@ export const LoginPage: React.FC = () => {
               />
             </FormField>
 
-            <div className="flex items-center justify-between text-sm">
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-nest-ink-muted hover:text-terracotta-600 hover:underline"
+            <div className="flex items-center justify-end text-sm">
+              <Link
+                to={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`}
+                className="text-nest-ink-muted hover:text-terracotta-600 hover:underline font-semibold"
               >
                 {t('auth.forgotPassword', 'Forgot your password?')}
-              </button>
+              </Link>
             </div>
 
           </CardContent>

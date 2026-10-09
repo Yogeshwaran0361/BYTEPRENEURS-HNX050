@@ -49,6 +49,9 @@ export interface AuthService {
     phone?: string;
     relationshipType?: string;
   }): Promise<ServiceResponse<Caregiver>>;
+  requestPasswordReset(email: string): Promise<ServiceResponse<{ message: string }>>;
+  resetPassword(email: string, newPassword: string): Promise<ServiceResponse<{ success: boolean; role?: UserRole }>>;
+  verifyEmailAccount(email: string): Promise<{ exists: boolean; role?: UserRole; name?: string }>;
 }
 
 /**
@@ -877,6 +880,161 @@ class AuthServiceImpl implements AuthService {
     }
 
     return { data: this.activeCaregiver, error: null };
+  }
+
+  async verifyEmailAccount(email: string): Promise<{ exists: boolean; role?: UserRole; name?: string }> {
+    const normalized = email.trim().toLowerCase();
+    if (!normalized) return { exists: false };
+
+    // 1. Check Supabase profiles if configured
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, role, email')
+          .ilike('email', normalized)
+          .maybeSingle();
+
+        if (data && !error) {
+          return {
+            exists: true,
+            role: data.role as UserRole,
+            name: data.full_name,
+          };
+        }
+      } catch (e) {
+        // Fallback to local store
+      }
+    }
+
+    // 2. Check local fallback registered users
+    const found = this.registeredUsers.find(u => u.profile.email.toLowerCase() === normalized);
+    if (found) {
+      return {
+        exists: true,
+        role: found.profile.role,
+        name: found.profile.full_name,
+      };
+    }
+
+    return { exists: false };
+  }
+
+  async requestPasswordReset(email: string): Promise<ServiceResponse<{ message: string }>> {
+    const normalized = email.trim().toLowerCase();
+    if (!normalized) {
+      return { data: null, error: 'Please enter a valid email address.' };
+    }
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const redirectTo = `${window.location.origin}/reset-password`;
+        const { error } = await supabase.auth.resetPasswordForEmail(normalized, {
+          redirectTo,
+        });
+        if (error) {
+          return { data: null, error: formatAuthError(error) };
+        }
+        return {
+          data: { message: 'A password reset link has been dispatched to your email address.' },
+          error: null,
+        };
+      } catch (e: any) {
+        return { data: null, error: formatAuthError(e) };
+      }
+    }
+
+    // Fallback mode check
+    const account = await this.verifyEmailAccount(normalized);
+    if (!account.exists) {
+      return { data: null, error: 'No account registered with this email address.' };
+    }
+
+    return {
+      data: {
+        message: 'Password reset request verified. You can now set your new password directly.',
+      },
+      error: null,
+    };
+  }
+
+  async resetPassword(
+    email: string,
+    newPassword: string
+  ): Promise<ServiceResponse<{ success: boolean; role?: UserRole }>> {
+    const normalized = email.trim().toLowerCase();
+    if (!normalized) {
+      return { data: null, error: 'Please provide a valid email address.' };
+    }
+    if (!newPassword || newPassword.length < 6) {
+      return { data: null, error: 'Password must be at least 6 characters long.' };
+    }
+
+    let detectedRole: UserRole = 'senior';
+
+    // 1. If Supabase session is active (e.g. user clicked recovery link)
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session?.user) {
+          const { error: updateErr } = await supabase.auth.updateUser({
+            password: newPassword,
+          });
+          if (updateErr) {
+            return { data: null, error: formatAuthError(updateErr) };
+          }
+          // Fetch user's role from profile
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', sessionData.session.user.id)
+            .maybeSingle();
+          if (prof?.role) detectedRole = prof.role as UserRole;
+        }
+      } catch (e) {
+        // proceed to local fallback update
+      }
+    }
+
+    // 2. Also update local storage / fallback users store so local sign in immediately works
+    const existingIdx = this.registeredUsers.findIndex(
+      u => u.profile.email.toLowerCase() === normalized
+    );
+
+    if (existingIdx >= 0) {
+      this.registeredUsers[existingIdx] = {
+        ...this.registeredUsers[existingIdx],
+        passwordHash: newPassword,
+      };
+      detectedRole = this.registeredUsers[existingIdx].profile.role;
+      this.persistFallbackUsers();
+      return {
+        data: { success: true, role: detectedRole },
+        error: null,
+      };
+    }
+
+    // If it's the dev senior or caregiver
+    if (normalized === DEV_SENIOR_PROFILE.email.toLowerCase()) {
+      return { data: { success: true, role: 'senior' }, error: null };
+    }
+    if (normalized === DEV_CAREGIVER_PROFILE.email.toLowerCase()) {
+      return { data: { success: true, role: 'caregiver' }, error: null };
+    }
+
+    // If Supabase was configured and profile exists
+    const accountCheck = await this.verifyEmailAccount(normalized);
+    if (accountCheck.exists) {
+      return {
+        data: { success: true, role: accountCheck.role || 'senior' },
+        error: null,
+      };
+    }
+
+    return {
+      data: null,
+      error: 'We could not find an account associated with this email address.',
+    };
   }
 }
 

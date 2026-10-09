@@ -27,6 +27,9 @@ interface AuthContextType {
     phone?: string;
     relationshipType?: string;
   }) => Promise<{ success: boolean; error?: string }>;
+  requestPasswordReset: (email: string) => Promise<{ success: boolean; message?: string; error?: string }>;
+  resetPassword: (email: string, newPassword: string) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
+  verifyEmailAccount: (email: string) => Promise<{ exists: boolean; role?: UserRole; name?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -186,6 +189,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const requestPasswordReset = async (email: string) => {
+    try {
+      const res = await authService.requestPasswordReset(email);
+      if (res.data) {
+        return { success: true, message: res.data.message };
+      }
+      return { success: false, error: res.error || 'Password reset request failed' };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Password reset request failed' };
+    }
+  };
+
+  const resetPassword = async (email: string, newPassword: string) => {
+    try {
+      const res = await authService.resetPassword(email, newPassword);
+      if (res.data?.success) {
+        return { success: true, role: res.data.role };
+      }
+      return { success: false, error: res.error || 'Password reset failed' };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Password reset failed' };
+    }
+  };
+
+  const verifyEmailAccount = async (email: string) => {
+    return authService.verifyEmailAccount(email);
+  };
+
   const isAuthenticated = Boolean(profile);
   const onboardingCompleted = Boolean(profile?.onboarding_completed);
 
@@ -206,6 +237,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         switchRole,
         updateCaregiverProfile,
+        requestPasswordReset,
+        resetPassword,
+        verifyEmailAccount,
       }}
     >
       {children}

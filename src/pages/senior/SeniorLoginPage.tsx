@@ -7,6 +7,7 @@ import { PasswordInput } from '../../components/ui/PasswordInput';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { User, ArrowRight } from 'lucide-react';
 
 export const SeniorLoginPage: React.FC = () => {
@@ -17,6 +18,7 @@ export const SeniorLoginPage: React.FC = () => {
 
   const { login } = useAuth();
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -118,6 +120,15 @@ export const SeniorLoginPage: React.FC = () => {
                 required
               />
             </FormField>
+
+            <div className="flex justify-end pt-1">
+              <Link
+                to={`/forgot-password?role=senior${email ? `&email=${encodeURIComponent(email)}` : ''}`}
+                className="text-sm font-bold text-terracotta-600 hover:text-terracotta-700 hover:underline inline-flex items-center gap-1"
+              >
+                {t('auth.forgotPassword', 'Forgot password?')}
+              </Link>
+            </div>
           </CardContent>
 
           <CardFooter className="flex-col gap-3 pt-2">
